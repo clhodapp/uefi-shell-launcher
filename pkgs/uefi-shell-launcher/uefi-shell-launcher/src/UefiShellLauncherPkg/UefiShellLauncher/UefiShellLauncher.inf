@@ -1,0 +1,35 @@
+## @file
+#  UEFI shell launcher: starts one of two shell builds from the ESP and
+#  explains the Secure Boot policy that applies to each.
+#
+#  SPDX-License-Identifier: MIT
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = UefiShellLauncher
+  FILE_GUID                      = b60c8d05-53fe-41cc-99f2-9e5e7853048b
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  UefiShellLauncher.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  DevicePathLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+
+[Protocols]
+  gEfiLoadedImageProtocolGuid
