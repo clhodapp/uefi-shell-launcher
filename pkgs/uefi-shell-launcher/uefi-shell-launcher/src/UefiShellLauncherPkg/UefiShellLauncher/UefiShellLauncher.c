@@ -13,12 +13,18 @@
                         firmware refuses it while Secure Boot is on.
 
   With Secure Boot enabled the launcher explains that the shell starts
-  without those commands and without startup scripts (-nostartup), and
-  that disabling Secure Boot in firmware setup is the way to get them;
-  a key press starts shell.efi. With Secure Boot disabled it explains
-  that the full shell starts, with the shell's own startup.nsh prompt
-  (ESC within its countdown skips the script); a key press starts
-  shell-insecure.efi with no options.
+  without those commands, and that disabling Secure Boot in firmware
+  setup is the way to get them; a key press starts shell.efi. With
+  Secure Boot disabled it starts shell-insecure.efi; a key press
+  starts it.
+
+  The reduced shell is started with -nostartup, the full shell with no
+  options. That flag is not a security boundary (an attacker at the
+  console can type the same commands a startup.nsh would run, and the
+  reduced shell has none of the dangerous ones anyway): it only stops
+  the shell from auto-running a startup.nsh off an attached volume
+  before the operator has decided to, which the full shell instead
+  gates behind its own ESC countdown.
 
   The launcher never verifies or loads image bytes itself. Both shells
   are started through the firmware's LoadImage/StartImage on a file
@@ -176,11 +182,14 @@ UefiMain (
       L"Secure Boot is enabled.\n"
       L"\n"
       L"Starting the UEFI Shell without the memory manipulation commands (mm,\n"
-      L"hexedit, setvar, dmpstore, bcfg, ...) and without startup scripts\n"
-      L"(-nostartup). Those commands can defeat Secure Boot from inside the\n"
-      L"shell, so the build that has them is deliberately left unsigned and the\n"
-      L"firmware will not load it while Secure Boot is enabled. If you need them,\n"
-      L"disable Secure Boot in firmware setup, boot, and choose this entry again.\n"
+      L"hexedit, setvar, dmpstore, bcfg, ...). Those commands can defeat Secure\n"
+      L"Boot from inside the shell, so the build that has them is deliberately\n"
+      L"left unsigned and the firmware will not load it while Secure Boot is\n"
+      L"enabled. If you need them, disable Secure Boot in firmware setup, boot,\n"
+      L"and choose this entry again.\n"
+      L"\n"
+      L"Startup scripts are also disabled (-nostartup), so a startup.nsh on an\n"
+      L"attached volume will not run on its own.\n"
       L"\n"
       L"Press any key to continue.\n"
       );

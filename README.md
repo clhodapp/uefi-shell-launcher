@@ -26,13 +26,21 @@ splits the shell in two and puts a small signed stub in front:
 
 | Secure Boot | What the launcher says | What starts after the key press |
 |---|---|---|
-| on | The shell starts without the memory manipulation commands and without startup scripts; disable Secure Boot in firmware setup if you need them. | `shell.efi` (reduced, signed) with `-nostartup`, so a `startup.nsh` on an attached volume cannot run automatically. |
-| off | The full shell starts, with startup scripts enabled; the shell's own countdown lets you press ESC to skip `startup.nsh`. | `shell-insecure.efi` (the stock `edk2-uefi-shell`, unsigned) with no options. |
+| on | The shell starts without the memory manipulation commands; disable Secure Boot in firmware setup if you need them. | `shell.efi` (reduced, signed), started with `-nostartup`. |
+| off | The full shell starts. | `shell-insecure.efi` (the stock `edk2-uefi-shell`, unsigned), started with no options. |
 
 Choosing the entry changes no Secure Boot state. If the unsigned shell
 is ever reached with Secure Boot on (a firmware that misreports the
 `SecureBoot` variable), `LoadImage` refuses it and the launcher prints
 the error and waits for a key before returning to the menu.
+
+`-nostartup` is not a security measure. An attacker at the console can
+type any command a `startup.nsh` would run, and the reduced shell has
+none of the dangerous ones regardless, so suppressing the auto-run
+neither adds nor removes a capability against that adversary. Its only
+job is to stop the reduced shell from silently running a `startup.nsh`
+off an attached volume before the operator has chosen to; the full
+shell leaves that to its own ESC countdown.
 
 ## Layout on the boot partition
 
@@ -69,12 +77,16 @@ From a flake, `overlays.packages` is a plain nixpkgs overlay that adds
 ## What this does and does not protect
 
 With the full shell unsigned, a signed launcher and reduced shell add
-no pre-boot capability beyond running signed images with
-attacker-chosen arguments and reading or writing files on any
-filesystem the firmware can mount. Under Secure Boot that is what any
-signed boot loader already permits. The residual risk is a
-memory-corruption bug in the shell itself; the reduced build has a
-smaller surface but was not written to be hostile-input safe.
+no pre-boot capability beyond running the reduced shell's own commands
+and reading or writing files on any filesystem the firmware can mount.
+The shell will also run a command line or script file it is given as
+arguments, but that is the same command set an attacker could type at
+its prompt, and any EFI image such a command launches still goes
+through the firmware's `LoadImage` Secure Boot check. Under Secure Boot
+that is what any signed boot loader already permits. The residual risk
+is a memory-corruption bug in the shell itself, reachable through that
+input; the reduced build has a smaller surface but was not written to
+be hostile-input safe.
 
 Disabling Secure Boot to get the full shell is gated by the firmware
 setup password, nothing here. If your disk encryption is bound to

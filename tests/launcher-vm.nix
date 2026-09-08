@@ -101,7 +101,7 @@ pkgs.runCommand "uefi-shell-launcher-vm-check"
     run sb vars-sb.fd \
       'Press any key to continue' '\r' 'Shell>' 'mm\r' 'Shell>' 'reset -s\r'
     must    sb 'Secure Boot is enabled'
-    must    sb 'without startup scripts'
+    must    sb 'Startup scripts are also disabled'
     mustnot sb 'STARTUP_NSH_RAN'
     mustnot sb 'Press ESC'
     must    sb "'mm' is not recognized"
