@@ -6,21 +6,20 @@
   pkgsBuildHost,
 }:
 
-# A small EDK2 application that boot-menu entries point at instead of a
-# shell binary. It starts one of two shells from fixed paths on the ESP
-# through the firmware's LoadImage, so Secure Boot policy decides what
-# runs:
+# A small EDK2 application that a single boot-menu entry points at
+# instead of a shell binary. It reads the Secure Boot state, explains
+# what it is about to start, waits for a key, and starts one of two
+# shells from fixed paths on its own filesystem through the firmware's
+# LoadImage, so Secure Boot policy decides what runs:
 #
 #   \EFI\uefi-shell\shell.efi           the reduced shell (pkgs.uefi-shell-launcher.uefi-shell),
-#                                       signed; -nostartup is added while
-#                                       Secure Boot is on.
+#                                       signed; started with -nostartup
+#                                       while Secure Boot is on.
 #   \EFI\uefi-shell\shell-insecure.efi  the full shell (edk2-uefi-shell),
-#                                       unsigned; with Secure Boot on the
-#                                       launcher explains and returns to
-#                                       the menu.
+#                                       unsigned; started with no options
+#                                       while Secure Boot is off.
 #
-# Load option "insecure" selects the second. See the C source for the
-# exact behaviour and messages.
+# See the C source for the exact behaviour and messages.
 
 edk2.mkDerivation "UefiShellLauncherPkg/UefiShellLauncherPkg.dsc" (finalAttrs: {
   pname = "uefi-shell-launcher";
@@ -49,16 +48,15 @@ edk2.mkDerivation "UefiShellLauncherPkg/UefiShellLauncherPkg.dsc" (finalAttrs: {
 
   passthru = {
     efi = "${finalAttrs.finalPackage}/uefi-shell-launcher.efi";
-    # ESP paths the launcher is compiled against; the consumer (e.g. ch-boot-integrity)
-    # places the shells there.
+    # Boot-partition paths the launcher is compiled against; the
+    # consumer (e.g. ch-boot-integrity) places the shells there.
     espDir = "EFI/uefi-shell";
     shellPath = "EFI/uefi-shell/shell.efi";
     insecureShellPath = "EFI/uefi-shell/shell-insecure.efi";
-    insecureOption = "insecure";
   };
 
   meta = {
-    description = "Boot-menu launcher for the fleet's signed and unsigned UEFI shells";
+    description = "Boot-menu launcher for a signed reduced UEFI shell, or the unsigned full shell where Secure Boot is off";
     license = lib.licenses.mit;
     platforms = edk2-uefi-shell.meta.platforms;
   };

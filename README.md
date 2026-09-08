@@ -16,18 +16,23 @@ splits the shell in two and puts a small signed stub in front:
   environment). The Debug1, Driver1, Install1 and network profiles are
   absent, so nothing in the binary writes memory, ports, PCI space or
   firmware variables. That is what makes it acceptable to sign.
-- **`uefi-shell-launcher`** is a UEFI application that a boot-menu entry
-  points at. It starts one of two shells from fixed paths on its own
-  filesystem through the firmware's `LoadImage`, so the firmware's
-  Secure Boot policy decides what runs; the launcher verifies nothing
-  itself and never touches image bytes.
+- **`uefi-shell-launcher`** is a UEFI application that a single
+  boot-menu entry points at. It reads the firmware's Secure Boot state,
+  explains what it is about to do, waits for a key, and starts one of
+  two shells from fixed paths on its own filesystem through the
+  firmware's `LoadImage`, so the firmware's Secure Boot policy decides
+  what runs; the launcher verifies nothing itself and never touches
+  image bytes.
 
-Two menu entries use it:
+| Secure Boot | What the launcher says | What starts after the key press |
+|---|---|---|
+| on | The shell starts without the memory manipulation commands and without startup scripts; disable Secure Boot in firmware setup if you need them. | `shell.efi` (reduced, signed) with `-nostartup`, so a `startup.nsh` on an attached volume cannot run automatically. |
+| off | The full shell starts, with startup scripts enabled; the shell's own countdown lets you press ESC to skip `startup.nsh`. | `shell-insecure.efi` (the stock `edk2-uefi-shell`, unsigned) with no options. |
 
-| Entry | Load option | Secure Boot on | Secure Boot off |
-|---|---|---|---|
-| UEFI Shell | none | Starts `shell.efi` with `-nostartup` and says so, so a `startup.nsh` on an attached volume cannot run automatically. | Starts `shell.efi` with startup scripts allowed. |
-| UEFI Shell (insecure memory manipulation) | `insecure` | The unsigned full shell cannot load. The launcher explains that Secure Boot must be disabled in firmware setup first, waits for a key, and returns to the menu. Choosing the entry changes no Secure Boot state. | Starts `shell-insecure.efi`, the stock `edk2-uefi-shell`. |
+Choosing the entry changes no Secure Boot state. If the unsigned shell
+is ever reached with Secure Boot on (a firmware that misreports the
+`SecureBoot` variable), `LoadImage` refuses it and the launcher prints
+the error and waits for a key before returning to the menu.
 
 ## Layout on the boot partition
 
@@ -41,19 +46,12 @@ EFI/uefi-shell/shell.efi                 the reduced shell, signed
 EFI/uefi-shell/shell-insecure.efi        nixpkgs' edk2-uefi-shell, unsigned on purpose
 ```
 
-systemd-boot Type 1 entries:
+systemd-boot Type 1 entry:
 
 ```
 title    UEFI Shell
 efi      /EFI/uefi-shell/uefi-shell-launcher.efi
 sort-key o_uefi-shell
-```
-
-```
-title    UEFI Shell (insecure memory manipulation)
-efi      /EFI/uefi-shell/uefi-shell-launcher.efi
-options  insecure
-sort-key o_uefi-shell-insecure
 ```
 
 ## Using it
@@ -78,20 +76,19 @@ signed boot loader already permits. The residual risk is a
 memory-corruption bug in the shell itself; the reduced build has a
 smaller surface but was not written to be hostile-input safe.
 
-Disabling Secure Boot to use the insecure entry is gated by the
-firmware setup password, nothing here. If your disk encryption is
-bound to Secure Boot state (a TPM policy over PCR 7), that toggle also
-withholds the disk key, which is the intended coupling.
+Disabling Secure Boot to get the full shell is gated by the firmware
+setup password, nothing here. If your disk encryption is bound to
+Secure Boot state (a TPM policy over PCR 7), that toggle also withholds
+the disk key, which is the intended coupling.
 
 ## Verification
 
-`nix flake check` boots OVMF's Secure Boot build in QEMU four times
-(each entry, with Secure Boot enforced and not), driving the serial
-console: it checks the launcher's messages, that `startup.nsh` runs
-only when Secure Boot is off, that the insecure entry is refused with
-the explanation under Secure Boot and starts the full shell without
-it, and that `mm` exists only in the full shell. Secure Boot is
-enforced by enrolling a throwaway certificate as PK, KEK and db with
+`nix flake check` boots OVMF's Secure Boot build in QEMU twice, with
+Secure Boot enforced and not, driving the serial console: it checks the
+launcher's messages, that nothing starts before the key press, that
+`startup.nsh` runs only when Secure Boot is off, and that `mm` exists
+only in the shell started without Secure Boot. Secure Boot is enforced
+by enrolling a throwaway certificate as PK, KEK and db with
 `virt-fw-vars` and signing the two signable binaries with it.
 
 ## Licensing

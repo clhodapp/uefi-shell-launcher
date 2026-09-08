@@ -11,18 +11,20 @@ The design has two pieces:
 
 1. A reduced shell (`NO_SHELL_PROFILES`) with none of those commands,
    which is signed.
-2. A signed launcher that boot-menu entries point at. It starts the
-   reduced shell (adding `-nostartup` while Secure Boot is on), or,
-   with the `insecure` load option, the unsigned stock shell. The
-   launcher loads only through the firmware's `LoadImage`, so under
-   Secure Boot the stock shell is refused by the firmware and the
-   launcher explains what to do instead of failing silently.
+2. A signed launcher that a single boot-menu entry points at. It reads
+   the Secure Boot state, explains what it is about to start, waits for
+   a key, and then starts the reduced shell with `-nostartup` (Secure
+   Boot on) or the unsigned stock shell with no options (Secure Boot
+   off, where the shell's own countdown handles `startup.nsh`). The
+   launcher loads only through the firmware's `LoadImage`, so the
+   firmware's policy, not the launcher's, is what keeps the stock shell
+   out under Secure Boot.
 
 Deployment is a consumer's concern: copy the three binaries to the
 boot partition at the compiled-in paths, sign the two signable ones,
-and write two Type 1 entries. The intended consumer in this workspace
-is ch-boot-integrity's `boot-integrity.os-trust.uefiShell` option,
-which does all of that inside its install hook.
+and write one Type 1 entry. The intended consumer in this workspace is
+ch-boot-integrity's `boot-integrity.os-trust.uefiShell` option, which
+does all of that inside its install hook.
 
 Non-goals: no changes to the EDK2 shell sources, no in-launcher
 verification of anything, no attempt to make the launcher itself a
