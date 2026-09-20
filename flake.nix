@@ -9,6 +9,9 @@
     # Stable channel on purpose: boot-path artifacts should churn as
     # little as possible, and nothing here needs bleeding-edge nixpkgs.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
   };
 
   outputs =
@@ -17,8 +20,6 @@
       lib = caisson.lib.caisson-core.mkLib {
         inherit inputs;
         systems = [ "x86_64-linux" ];
-        defaultEcosystemSrc.nixpkgs = inputs.nixpkgs;
-
         projects = {
           inherit caisson;
         };
