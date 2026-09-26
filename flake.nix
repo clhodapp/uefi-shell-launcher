@@ -19,6 +19,7 @@
     let
       lib = caisson.lib.caisson-core.mkLib {
         inherit inputs;
+        namespace = "uefi-shell-launcher";
         systems = [ "x86_64-linux" ];
         projects = {
           inherit caisson;
@@ -30,7 +31,6 @@
       };
     in
     lib.caisson.flake-parts.mkConfiguration {
-      name = "uefi-shell-launcher";
       configModule = lib.caisson.flake-parts.mkModule ./configs/flake-parts/default;
     };
 
