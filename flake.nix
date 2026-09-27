@@ -26,12 +26,13 @@
         };
 
         modules = caisson.lib.caisson-core.mkModules ./modules;
+        configs = caisson.lib.caisson-core.mkModules ./configs;
 
         libOverlays = caisson.lib.caisson-core.mkLibOverlays ./lib-overlays;
       };
     in
     lib.caisson.flake-parts.mkConfiguration {
-      configModule = lib.caisson.flake-parts.mkModule ./configs/flake-parts/default;
+      configModule = lib.caisson-core.configs.flake.uefi-shell-launcher;
     };
 
 }
