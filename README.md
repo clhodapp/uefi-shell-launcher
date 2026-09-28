@@ -69,7 +69,7 @@ Build (Nix): `nix build .#uefi-shell-launcher` and `nix build
 `shell.efi`. Sign both with your db key; copy the stock shell from
 `nixpkgs#edk2-uefi-shell` unsigned.
 
-From a flake, `overlays.packages` is a plain nixpkgs overlay that adds
+From a flake, `overlays.default` is a plain nixpkgs overlay that adds
 `pkgs.uefi-shell-launcher.uefi-shell-launcher` and
 `pkgs.uefi-shell-launcher.uefi-shell`. Each derivation carries
 `passthru.efi`, the path of its binary.
