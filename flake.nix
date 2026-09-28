@@ -19,7 +19,7 @@
     let
       lib = caisson.lib.caisson-core.mkLib {
         inherit (caisson.lib.caisson-core.pins.flake inputs) sources root;
-        namespace = "uefi-shell-launcher";
+        name = "uefi-shell-launcher";
         systems = [ "x86_64-linux" ];
         projects = {
           inherit caisson;
