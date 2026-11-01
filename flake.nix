@@ -3,6 +3,19 @@
 
   description = "UEFI shell launcher: a signed boot-menu stub that starts a reduced (signable) EDK2 shell, or the full shell only where Secure Boot allows it";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://clhodapp.cachix.org"
+      "https://nix-community.cachix.org"
+      "https://numtide.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "clhodapp.cachix.org-1:EW/0conxH0OQyo0o4ub/grdkFspholmQMSnQyj0vrZI="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+    ];
+  };
+
   inputs = {
     caisson.url = "github:nix-caisson/caisson";
 
