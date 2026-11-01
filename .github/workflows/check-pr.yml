@@ -139,8 +139,13 @@ jobs:
           # what it built, and the pruning keeps only what the roots reach.
           # An output the flake does not provide (this one has no
           # packages) is skipped; any other evaluation error fails.
+          # A package is skipped when its meta.hydraPlatforms is [ ] or one of
+          # its licenses is not redistributable, the rule nixpkgs' Hydra
+          # follows: this run neither builds it as a root nor pushes it to a
+          # binary cache.
           for kind in checks packages; do
-            if ! names=$(nix eval --json ".#$kind.x86_64-linux" --apply builtins.attrNames 2>"$RUNNER_TEMP/eval.err"); then
+            # shellcheck disable=SC2016 # ${n} below is Nix interpolation, not shell
+            if ! names=$(nix eval --json ".#$kind.x86_64-linux" --apply 'ps: builtins.filter (n: let m = ps.${n}.meta or { }; ls = m.license or [ ]; in (m.hydraPlatforms or null) != [ ] && builtins.all (l: l.redistributable or true) (if builtins.isList ls then ls else [ ls ])) (builtins.attrNames ps)' 2>"$RUNNER_TEMP/eval.err"); then
               grep -q 'does not provide attribute' "$RUNNER_TEMP/eval.err" || { cat "$RUNNER_TEMP/eval.err"; exit 1; }
               continue
             fi
