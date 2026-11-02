@@ -10,4 +10,5 @@
 - **C (EDK2 UEFI application)**: the launcher lives under
   `pkg-overlays/default/packages/uefi-shell-launcher/src/UefiShellLauncherPkg`
   and is built out-of-tree against MdePkg via a minimal DSC, the same
-  way big-console builds its driver
+  way [big-console](https://github.com/clhodapp/big-console) builds its
+  driver

@@ -22,9 +22,9 @@ The design has two pieces:
 
 Deployment is a consumer's concern: copy the three binaries to the
 boot partition at the compiled-in paths, sign the two signable ones,
-and write one Type 1 entry. The intended consumer in this workspace is
-ch-boot-integrity's `boot-integrity.os-trust.uefiShell` option, which
-does all of that inside its install hook.
+and write one Type 1 entry. A NixOS consumer typically does all of
+that inside its boot loader's install hook, reading the paths from the
+package's `passthru`.
 
 Non-goals: no changes to the EDK2 shell sources, no in-launcher
 verification of anything, no attempt to make the launcher itself a

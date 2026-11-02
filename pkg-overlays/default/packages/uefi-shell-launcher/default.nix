@@ -49,7 +49,7 @@ edk2.mkDerivation "UefiShellLauncherPkg/UefiShellLauncherPkg.dsc" (finalAttrs: {
   passthru = {
     efi = "${finalAttrs.finalPackage}/uefi-shell-launcher.efi";
     # Boot-partition paths the launcher is compiled against; the
-    # consumer (e.g. ch-boot-integrity) places the shells there.
+    # consumer places the shells there.
     espDir = "EFI/uefi-shell";
     shellPath = "EFI/uefi-shell/shell.efi";
     insecureShellPath = "EFI/uefi-shell/shell-insecure.efi";
