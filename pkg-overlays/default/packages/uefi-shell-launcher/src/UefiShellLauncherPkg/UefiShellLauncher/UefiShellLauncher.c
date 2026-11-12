@@ -24,7 +24,7 @@
   reduced shell has none of the dangerous ones anyway): it only stops
   the shell from auto-running a startup.nsh off an attached volume
   before the operator has decided to, which the full shell instead
-  gates behind its own ESC countdown.
+  gates behind the ESC countdown it shows.
 
   The launcher never verifies or loads image bytes itself. Both shells
   are started through the firmware's LoadImage/StartImage on a file
@@ -103,7 +103,7 @@ WaitForAnyKey (
 }
 
 /**
-  Load and start an image from the launcher's own filesystem.
+  Load and start an image from the filesystem the launcher was loaded from.
 
   @param ImageHandle   The launcher's image handle (parent of the child).
   @param DeviceHandle  Handle of the filesystem the launcher was read from.
@@ -172,7 +172,7 @@ UefiMain (
                   (VOID **)&Self
                   );
   if (EFI_ERROR (Status)) {
-    Print (L"uefi-shell-launcher: cannot find own loaded image: %r\n", Status);
+    Print (L"uefi-shell-launcher: cannot find the launcher's loaded image: %r\n", Status);
     return Status;
   }
 
@@ -189,7 +189,7 @@ UefiMain (
       L"and choose this entry again.\n"
       L"\n"
       L"Startup scripts are also disabled (-nostartup), so a startup.nsh on an\n"
-      L"attached volume will not run on its own.\n"
+      L"attached volume will not run automatically.\n"
       L"\n"
       L"Press any key to continue.\n"
       );
@@ -203,7 +203,7 @@ UefiMain (
       L"\n"
       L"Starting the full UEFI Shell (memory manipulation commands available).\n"
       L"Startup scripts are enabled: a startup.nsh on an attached volume runs\n"
-      L"unless you press ESC at the shell's own countdown.\n"
+      L"unless you press ESC during the shell's countdown.\n"
       L"\n"
       L"Press any key to continue.\n"
       );

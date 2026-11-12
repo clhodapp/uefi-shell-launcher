@@ -15,7 +15,7 @@ The design has two pieces:
    the Secure Boot state, explains what it is about to start, waits for
    a key, and then starts the reduced shell with `-nostartup` (Secure
    Boot on) or the unsigned stock shell with no options (Secure Boot
-   off, where the shell's own countdown handles `startup.nsh`). The
+   off, where the countdown of the stock shell handles `startup.nsh`). The
    launcher loads only through the firmware's `LoadImage`, so the
    firmware's policy, not the launcher's, is what keeps the stock shell
    out under Secure Boot.

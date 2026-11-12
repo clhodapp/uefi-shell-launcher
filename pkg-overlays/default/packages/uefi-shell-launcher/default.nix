@@ -9,8 +9,8 @@
 # A small EDK2 application that a single boot-menu entry points at
 # instead of a shell binary. It reads the Secure Boot state, explains
 # what it is about to start, waits for a key, and starts one of two
-# shells from fixed paths on its own filesystem through the firmware's
-# LoadImage, so Secure Boot policy decides what runs:
+# shells from fixed paths on the filesystem it was loaded from, through
+# the LoadImage service of the firmware, so Secure Boot policy decides what runs:
 #
 #   \EFI\uefi-shell\shell.efi           the reduced shell (pkgs.uefi-shell-launcher.uefi-shell),
 #                                       signed; started with -nostartup

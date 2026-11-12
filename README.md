@@ -19,7 +19,7 @@ splits the shell in two and puts a small signed stub in front:
 - **`uefi-shell-launcher`** is a UEFI application that a single
   boot-menu entry points at. It reads the firmware's Secure Boot state,
   explains what it is about to do, waits for a key, and starts one of
-  two shells from fixed paths on its own filesystem through the
+  two shells from fixed paths on the filesystem it was loaded from, through the
   firmware's `LoadImage`, so the firmware's Secure Boot policy decides
   what runs; the launcher verifies nothing itself and never touches
   image bytes.
@@ -40,7 +40,7 @@ none of the dangerous ones regardless, so suppressing the auto-run
 neither adds nor removes a capability against that adversary. Its only
 job is to stop the reduced shell from silently running a `startup.nsh`
 off an attached volume before the operator has chosen to; the full
-shell leaves that to its own ESC countdown.
+shell leaves that to the ESC countdown it shows.
 
 ## Layout on the boot partition
 
@@ -77,7 +77,7 @@ From a flake, `overlays.default` is a plain nixpkgs overlay that adds
 ## What this does and does not protect
 
 With the full shell unsigned, a signed launcher and reduced shell add
-no pre-boot capability beyond running the reduced shell's own commands
+no pre-boot capability beyond running the commands of the reduced shell
 and reading or writing files on any filesystem the firmware can mount.
 The shell will also run a command line or script file it is given as
 arguments, but that is the same command set an attacker could type at
@@ -105,9 +105,10 @@ by enrolling a throwaway certificate as PK, KEK and db with
 
 In CI the same `nix flake check` runs with the Nix store cached between
 runs. A pull request that leaves `.github/` alone is checked by `main`'s
-copy of the workflow, in `main`'s context once its own check completes,
-and adds its build to the shared cache; one that changes the pipeline is
-checked by its own copy, under a cache only it can see. The comments at
+copy of the workflow, in `main`'s context once the request's check-pr
+run completes, and adds its build to the shared cache; a pull request
+that changes the pipeline is checked by the copy of the workflow it
+carries, under a cache only that request can see. The comments at
 the top of the two workflow files say why that split is what makes the
 cache safe to write from a pull request.
 
@@ -126,7 +127,7 @@ means using them too:
 The flake's `nixConfig` declares all three, so a direct `nix build` or
 `nix flake check` here uses them once accepted: answer Nix's prompt, or
 pass `--accept-flake-config`. A flake that consumes this one
-as an input must add them to its own `extra-substituters` and
+as an input must add them to its `extra-substituters` and
 `extra-trusted-public-keys`; Nix does not carry an input's settings
 into the consumer.
 

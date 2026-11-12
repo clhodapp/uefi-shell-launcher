@@ -10,8 +10,8 @@
 # That is what makes it acceptable to sign with the Secure Boot db key;
 # the stock edk2-uefi-shell must stay unsigned.
 #
-# ShellPkg.dsc builds two shells. Only the first, carrying Shell.inf's
-# own FILE_GUID, honours NO_SHELL_PROFILES; nixpkgs installs the second
+# ShellPkg.dsc builds two shells. Only the first, carrying the FILE_GUID
+# of Shell.inf, honours NO_SHELL_PROFILES; nixpkgs installs the second
 # ("all commands integrated", GUID EA4BB293-...), so the install step is
 # replaced as well as the build flag.
 

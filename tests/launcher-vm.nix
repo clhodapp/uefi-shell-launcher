@@ -9,7 +9,7 @@
 #         the disk's startup.nsh must NOT run and `mm` is not
 #         recognized.
 #   nosb  Secure Boot off. After the key press the full shell starts
-#         with no options, shows its own startup.nsh countdown, runs
+#         with no options, shows the startup.nsh countdown, runs
 #         startup.nsh, and `mm` exists.
 #
 # Secure Boot is enforced by enrolling a throwaway certificate as
@@ -97,7 +97,7 @@ pkgs.runCommand "uefi-shell-launcher-vm-check"
 
     # The launcher waits for a key in both states; the driver sends Enter
     # only once the prompt has appeared, which is the check that the
-    # shell did not start on its own.
+    # shell did not start before the key press.
     run sb vars-sb.fd \
       'Press any key to continue' '\r' 'Shell>' 'mm\r' 'Shell>' 'reset -s\r'
     must    sb 'Secure Boot is enabled'
