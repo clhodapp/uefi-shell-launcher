@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: MIT
 { ... }:
 {
-  config,
   inputs,
   lib,
-  self,
   ...
 }:
 {
@@ -29,10 +27,24 @@
     packages.export.enabled = true;
   };
 
-  # checks and formatter live in isolated partitions; packages deliberately
+  # The checks of uefi-shell-launcher, with the pins of
+  # tests/dependencies that only the checks need (configs/flake/checks).
+  # The caisson top gathers the checks of every configuration declared
+  # inside it into its `checks` output. This selector passes the
+  # configuration up to nothing, so a flake that reads the exports of
+  # uefi-shell-launcher evaluates neither the configuration nor its pins.
+  caisson.flake-parts.configurations.checks = lib.caisson.flake-parts.mkConfiguration {
+    inherit (lib.caisson.pins.flake-compat ../../../tests/dependencies) dependencies;
+  };
+  caisson.flake-parts.exported = _: { };
+
+  # The check that boots the launcher runs OVMF in a raw QEMU process
+  # inside the build, not under the NixOS test driver.
+  caisson.checkCategories.qemu.description = "Firmware or a disk image boots in QEMU inside the build and shows what the test expects.";
+
+  # The formatter lives in an isolated partition; packages deliberately
   # do not: downstream flakes consume packages.* against this flake's main
   # lock (inherited locks), so dev-only inputs must not taint them.
-  partitionedAttrs.checks = "checks";
   partitionedAttrs.formatter = "formatter";
 
   partitions.formatter = {
@@ -42,34 +54,6 @@
       {
         imports = [ inputs.treefmt-nix.flakeModule ];
         perSystem.treefmt.programs.nixfmt.enable = true;
-      };
-  };
-
-  partitions.checks = {
-    extraInputs = (lib.caisson.pins.flake-compat ../../../tests/dependencies).dependencies;
-    module =
-      { inputs, self, ... }:
-      {
-        imports = [ inputs.treefmt-nix.flakeModule ];
-        perSystem =
-          { pkgs, ... }:
-          {
-            checks = {
-              smoke = pkgs.runCommand "uefi-shell-launcher-smoke-check" { } ''
-                touch "$out"
-              '';
-              # Boots OVMF four times (safe/insecure entry, Secure Boot
-              # enforced/not) and checks the launcher's decisions on the
-              # serial console; see tests/launcher-vm.nix.
-              launcher-vm = import ../../../tests/launcher-vm.nix {
-                inherit pkgs;
-                launcher = pkgs.uefi-shell-launcher.uefi-shell-launcher;
-                shell = pkgs.uefi-shell-launcher.uefi-shell;
-                insecureShell = pkgs.edk2-uefi-shell;
-              };
-            };
-            treefmt.programs.nixfmt.enable = true;
-          };
       };
   };
 
