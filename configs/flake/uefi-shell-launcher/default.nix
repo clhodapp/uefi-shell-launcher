@@ -38,10 +38,6 @@
   };
   caisson.flake-parts.exported = _: { };
 
-  # The check that boots the launcher runs OVMF in a raw QEMU process
-  # inside the build, not under the NixOS test driver.
-  caisson.checkCategories.qemu.description = "Firmware or a disk image boots in QEMU inside the build and shows what the test expects.";
-
   # The formatter lives in an isolated partition; packages deliberately
   # do not: downstream flakes consume packages.* against this flake's main
   # lock (inherited locks), so dev-only inputs must not taint them.
